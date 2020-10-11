@@ -12,6 +12,7 @@
  */
 package com.epomeroy.jira.crowd.nexus3.plugin.internal;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -110,12 +111,18 @@ public class CrowdProperties {
         return applicationName;
     }
 
-
-
     public String getApplicationPassword() {
-        // Read a docker env setting and try to use it, otherwise fall back to config file
+        String pw;
+
         // Docker secrets are files in the /run/secrets folder and are passed as the full filename
-        String pw = readFile(System.getenv("APPLICATION_PASSWORD"));
+        // If this is a docker swarm with secrets, it is a file. If it is a Kubernetes cluster, it is the string password
+        File pw_file = new File(System.getenv("APPLICATION_PASSWORD"));
+        if (pw_file.exists()) {
+            pw = readFile(System.getenv("APPLICATION_PASSWORD"));
+        } else {
+            pw = System.getenv("APPLICATION_PASSWORD");
+        }
+
         String applicationPassword = StringUtils.isNotEmpty(pw) ? pw : readFile(configuration.getAppPass());
         if (StringUtils.isEmpty(applicationPassword)) {
             LOGGER.error("APPLICATION_PASSWORD is not set");
@@ -131,7 +138,15 @@ public class CrowdProperties {
      * @return Group all users must belong to in order to login and use nexus
      */
     public String getFilterGroup() {
-        return configuration.getFilterGroup();
+        // Read a docker env setting and try to use it, otherwise fall back to config file
+        String fg = StringUtils.isNotEmpty(System.getenv("FILTER_GROUP")) ? System.getenv("FILTER_GROUP") : configuration.getServerURL();
+        String filterGroup = StringUtils.isNotEmpty(fg) ? fg : readFile(configuration.getFilterGroup());
+        if (StringUtils.isEmpty(filterGroup)) {
+            LOGGER.error("FILTER_GROUP is not set");
+            return "NONE";
+        }
+
+        return filterGroup;
     }
 
     /**

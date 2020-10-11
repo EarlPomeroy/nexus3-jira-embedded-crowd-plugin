@@ -92,13 +92,25 @@ The file has to contain the following properties:
 **nexusRole**|Nexus Role
 **jiraRole**|Jira group
      
-
-#### 3. Run in Terminal
+#### 4. Run in Terminal
 
 ```
 docker build -t nexus-test .
 docker run --rm -it -v /path/to/your/nexus-data:/nexus-data -p 8081:8081 nexus-test
 ```
+
+### Deployment to a Container Environment
+The crowd properties can be read from the environment and override values set in *crowd-properties.json* making it easier for deploying in a container environment.  Below is a list of environment variables with the corresponding *crowd-properties.json* values.
+
+Property File Field | Environment Variable
+|------------------:|------------------------|
+**serverURL**|SERVER_URL
+**appUser**|APPLICATION_USERNAME
+**appPass**|APPLICATION_PASSWORD
+**filterGroup**|FILTER_GROUP
+**connectTimeout**|CONNECTION_TIMEOUT
+**socketTimeout**|SOCKET_TIMEOUT
+**requestTimeout**|CONNECTION_REQUEST_TIMEOUT
 
 ### Native installation without docker
 
